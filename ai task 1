@@ -1,0 +1,20 @@
+from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.corpus import stopwords
+from collections import defaultdict
+
+def basic_summarizer(text, summary_length=2):
+    sentences = sent_tokenize(text)
+    word_freq = defaultdict(int)
+    stop_words = set(stopwords.words('english'))
+    for sentence in sentences:
+        for word in word_tokenize(sentence.lower()):
+            if word.isalpha() and word not in stop_words:
+                word_freq[word] += 1
+    sentence_scores = defaultdict(int)
+    for i, sentence in enumerate(sentences):
+        for word in word_tokenize(sentence.lower()):
+            if word in word_freq:
+                sentence_scores[i] += word_freq[word]
+    top = sorted(sentence_scores, key=sentence_scores.get, reverse=True)[:summary_length]
+    summary = ' '.join(sentences[j] for j in sorted(top))
+    return summary
