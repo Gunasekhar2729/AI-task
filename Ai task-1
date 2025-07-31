@@ -1,0 +1,16 @@
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.lsa import LsaSummarizer
+
+def summarize_text(text, sentence_count=2):
+    parser = PlaintextParser.from_string(text, Tokenizer("english"))
+    summarizer = LsaSummarizer()
+    summary = summarizer(parser.document, sentence_count)
+    return " ".join(str(sentence) for sentence in summary)
+
+# Example usage
+text = """Artificial intelligence is transforming industries worldwide. 
+It enables machines to learn, reason, and make decisions. 
+From healthcare to finance, AI improves efficiency and accuracy. 
+However, ethical concerns like bias and privacy remain critical challenges."""
+print(summarize_text(text))
