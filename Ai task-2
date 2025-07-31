@@ -1,0 +1,32 @@
+import speech_recognition as sr
+import sys
+from io import BytesIO
+from pydub import AudioSegment
+
+def transcribe_audio(audio_file_path):
+    recognizer = sr.Recognizer()
+    try:
+        # Load audio file
+        audio = AudioSegment.from_file(audio_file_path)
+        wav_io = BytesIO()
+        audio.export(wav_io, format="wav")
+        wav_io.seek(0)
+        
+        # Transcribe using Google Speech Recognition
+        with sr.AudioFile(wav_io) as source:
+            audio_data = recognizer.record(source)
+            text = recognizer.recognize_google(audio_data)
+            return text
+    except sr.UnknownValueError:
+        return "Could not understand the audio"
+    except sr.RequestError as e:
+        return f"Error: {e}"
+    except Exception as e:
+        return f"Unexpected error: {e}"
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python speech_recognition.py <audio_file_path>")
+        sys.exit(1)
+    result = transcribe_audio(sys.argv[1])
+    print("Transcription:", result)
