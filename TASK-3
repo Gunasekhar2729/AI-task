@@ -1,0 +1,31 @@
+import torch
+import torchvision.transforms as transforms
+from torchvision.models import vgg19
+from PIL import Image
+import torch.optim as optim
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+vgg = vgg19(pretrained=True).features.eval().to(device)
+
+def load_image(img_path, size=512):
+    img = Image.open(img_path).convert('RGB')
+    transform = transforms.Compose([transforms.Resize(size), transforms.ToTensor()])
+    return transform(img).unsqueeze(0).to(device)
+
+content_img = load_image('content.jpg')
+style_img = load_image('style.jpg')
+generated = content_img.clone().requires_grad_(True)
+
+optimizer = optim.LBFGS([generated])
+for _ in range(10):
+    def closure():
+        optimizer.zero_grad()
+        content_loss = torch.mean((generated - content_img) ** 2)
+        style_loss = torch.mean((vgg(generated) - vgg(style_img)) ** 2)
+        loss = content_loss + 1000 * style_loss
+        loss.backward()
+        return loss
+    optimizer.step(closure)
+
+output = transforms.ToPILImage()(generated.squeeze(0).cpu())
+output.save('styled_image.jpg')
